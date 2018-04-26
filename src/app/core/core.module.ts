@@ -1,0 +1,40 @@
+import { NgModule, Optional, SkipSelf, ErrorHandler } from '@angular/core';
+import { CommonModule } from '@angular/common';
+
+import { LoggerService } from './logger.service';
+import { DataService } from './data.service';
+import { PlainLoggerService } from "./plain-logger.service";
+import { throwIfAlreadyLoaded } from "app/core/module-import-guard";
+import { BookTrackerErrorHandlerService } from './book-tracker-error-handler.service';
+import { BookResolverService } from 'app/core/bookResolver.service';
+import { HTTP_INTERCEPTORS } from '@angular/common/http';
+import { HeaderInterceptorService } from 'app/core/header.intercceptor';
+import { LogResponseInterceptor } from 'app/core/log-response.interceptor';
+import { HttpCacheService } from './http-cache.service';
+import { Cachenterceptor } from 'app/core/cache-interceptor';
+
+
+@NgModule({
+  imports: [
+    CommonModule
+  ],
+  declarations: [],
+  providers: [
+    LoggerService, 
+    DataService, 
+    { provide: ErrorHandler, useClass: BookTrackerErrorHandlerService },
+    { provide : HTTP_INTERCEPTORS , useClass: HeaderInterceptorService, multi: true},
+    // Provide all interceptors one after the other in the same way. The modified request follows this sequence when executing interceptor next.handle() method 
+    { provide : HTTP_INTERCEPTORS , useClass: LogResponseInterceptor, multi: true},
+    { provide : HTTP_INTERCEPTORS , useClass: Cachenterceptor, multi: true},
+    BookResolverService,
+    HttpCacheService
+  ]
+})
+export class CoreModule {
+
+  constructor( @Optional() @SkipSelf() parentModule: CoreModule) {
+    throwIfAlreadyLoaded(parentModule, 'CoreModule');
+  }
+  
+ }
